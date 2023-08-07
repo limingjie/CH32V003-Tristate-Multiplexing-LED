@@ -1,4 +1,3 @@
-
 PREFIX?=riscv64-unknown-elf
 
 CH32V003FUN?=./ch32v003fun
@@ -27,6 +26,7 @@ $(TARGET).elf : $(SYSTEM_C) $(TARGET).$(TARGET_EXT) $(ADDITIONAL_C_FILES)
 
 $(TARGET).bin : $(TARGET).elf
 	$(PREFIX)-size $^
+	$(PREFIX)-objdump -d $^ > $(TARGET).asm
 	$(PREFIX)-objdump -S $^ > $(TARGET).lst
 	$(PREFIX)-objdump -t $^ > $(TARGET).map
 	$(PREFIX)-objcopy -O binary $< $(TARGET).bin
@@ -65,6 +65,6 @@ cv_flash : $(TARGET).bin
 	$(FLASH_COMMAND)
 
 cv_clean :
-	rm -rf $(TARGET).elf $(TARGET).bin $(TARGET).hex $(TARGET).lst $(TARGET).map $(TARGET).hex || true
+	rm -rf $(TARGET).elf $(TARGET).bin $(TARGET).hex $(TARGET).lst $(TARGET).map $(TARGET).hex $(TARGET).asm || true
 
 build : $(TARGET).bin
