@@ -2,6 +2,10 @@
 
 CH32V003J4M6 (SOP-8) drives 5x6 LED matrix.
 
+## Schematic
+
+![Schematic](images/CH32V003_Tristate_Multiplexing_LED_Schematic.png)
+
 ## References
 
 - [Stefan Wagner: CH32V003 RISC-V Mini Game Console](https://github.com/wagiminator/CH32V003-GameConsole)
