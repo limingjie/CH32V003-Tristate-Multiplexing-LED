@@ -11,6 +11,8 @@
  *  - GitHub: https://github.com/limingjie/
  */
 
+#include <string.h>  // memcpy
+
 #include "ch32v003fun.h"
 #include "ch32v003_GPIO_branchless.h"
 
@@ -33,8 +35,30 @@ uint8_t pins[LED_MATRIX_NUM_PINS] = {
     GPIOv_from_PORT_PIN(GPIO_port_A, 1),
 };
 
+// 5x6 pixel font
+static uint32_t font[] = {
+    0b100011000110001111111000101110,  // A
+    0b011111000110001011111000101111,  // B
+    0b011101000100001000011000101110,  // C
+    0b011111000110001100011000101111,  // D
+    0b111110000100001011110000111111,  // E
+    0b000010000100001011110000111111,  // F
+    0b011101000110001111010000101110,  // G
+    0b100011000110001111111000110001,  // H
+    0b011100010000100001000010001110,  // I
+    0b001100100101000010000100011100   // J
+};
+
+// Effects
+static uint8_t effects[][LED_MATRIX_SIZE] = {
+    {0, 4, 8, 16, 0, 4, 8, 16, 0, 4, 8, 16},   // Diagonal wave
+    {0, 3, 6, 9, 12, 15, 0, 0, 0, 0, 0, 0},    // Snake
+    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 16},     // Dot
+    {0, 0, 16, 0, 0, 16, 0, 0, 16, 0, 0, 16},  // Line
+};
+
 // PWM duty cycles of LEDs
-uint8_t led_duty_cycles[LED_MATRIX_SIZE] = {0, 4, 8, 16, 0, 4, 8, 16, 0, 4, 8, 16};
+uint8_t led_duty_cycles[LED_MATRIX_SIZE];
 
 static inline void led_matrix_run();
 
@@ -107,6 +131,9 @@ static inline void led_matrix_run()
         cycle = 0;
         led++;
 
+        // Put the current column pin in high impedance mode.
+        GPIO_pinMode(pins[column], GPIO_pinMode_I_floating, GPIO_Speed_10MHz);
+
         // The column and row cannot be the same pin.
         if (++column == row)
         {
@@ -120,6 +147,8 @@ static inline void led_matrix_run()
 
             // Put the current row pin in high impedance mode.
             GPIO_pinMode(pins[row], GPIO_pinMode_I_floating, GPIO_Speed_10MHz);
+
+            // Reset to the first LED.
             if (++row == LED_MATRIX_NUM_PINS)
             {
                 row    = 0;
@@ -128,6 +157,24 @@ static inline void led_matrix_run()
             }
         }
     }
+}
+
+void led_putchar(uint8_t c)
+{
+    uint32_t ch  = font[c];
+    uint8_t *led = led_duty_cycles;
+    for (uint8_t line = 0; line < LED_MATRIX_NUM_PINS; line++)
+    {
+        for (uint8_t pixel = 0; pixel < LED_MATRIX_NUM_PINS - 1; pixel++)
+        {
+            *led++ = (ch & (1 << (line * 5 + pixel))) ? 32 : 0;
+        }
+    }
+}
+
+static inline void set_effect(uint8_t i)
+{
+    memcpy(led_duty_cycles, effects[i], LED_MATRIX_SIZE * sizeof(uint8_t));
 }
 
 int main()
@@ -143,14 +190,29 @@ int main()
 
     while (1)
     {
-        // Shuffle the LED duty cycles
-        uint8_t t = led_duty_cycles[0];
-        for (uint8_t i = 0; i < LED_MATRIX_SIZE - 1; i++)
+        // Run snake
+        for (uint8_t e = 0; e < sizeof(effects) / sizeof(effects[0]); e++)
         {
-            led_duty_cycles[i] = led_duty_cycles[i + 1];
-        }
-        led_duty_cycles[LED_MATRIX_SIZE - 1] = t;
+            set_effect(e);
+            for (uint8_t loop = 0; loop < 12; loop++)
+            {
+                // Shuffle the LED duty cycles
+                uint8_t t = led_duty_cycles[0];
+                for (uint8_t i = 0; i < LED_MATRIX_SIZE - 1; i++)
+                {
+                    led_duty_cycles[i] = led_duty_cycles[i + 1];
+                }
+                led_duty_cycles[LED_MATRIX_SIZE - 1] = t;
 
-        Delay_Ms(100);
+                Delay_Ms(100);
+            }
+        }
+
+        // Show all characters
+        for (uint8_t c = 0; c < sizeof(font) / sizeof(font[0]); c++)
+        {
+            led_putchar(c);
+            Delay_Ms(300);
+        }
     }
 }
