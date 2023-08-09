@@ -5,6 +5,8 @@
 
 #include "funconfig.h"
 
+#define FUNCONF_USE_PLL           0        // Use built-in 2x PLL
+#define FUNCONF_SYSTEM_CORE_CLOCK 6000000  // Computed Clock in Hz.
 /*****************************************************************************
 	CH32V003 Fun Configs:
 
