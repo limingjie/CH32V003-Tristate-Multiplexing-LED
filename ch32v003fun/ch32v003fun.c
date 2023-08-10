@@ -1045,11 +1045,11 @@ void SystemInit()
 
 #if defined(FUNCONF_USE_HSI) && FUNCONF_USE_HSI
 	#if defined(FUNCONF_USE_PLL) && FUNCONF_USE_PLL
-		RCC->CFGR0 = RCC_HPRE_DIV1 | RCC_PLLSRC_HSI_Mul2;
-		RCC->CTLR  = BASE_CTLR | RCC_HSION | RCC_PLLON; 			// Use HSI, enable PLL.
+        RCC->CFGR0 = FUNCONF_CLOCK_DIV | RCC_PLLSRC_HSI_Mul2;
+        RCC->CTLR  = BASE_CTLR | RCC_HSION | RCC_PLLON;             // Use HSI, enable PLL.
 	#else
-		RCC->CFGR0 = RCC_HPRE_DIV4;                               	// PLLCLK = HCLK = SYSCLK = APB1
-		RCC->CTLR  = BASE_CTLR | RCC_HSION;     					// Use HSI, Only.
+		RCC->CFGR0 = FUNCONF_CLOCK_DIV;                             // PLLCLK = HCLK = SYSCLK = APB1
+		RCC->CTLR  = BASE_CTLR | RCC_HSION;                         // Use HSI, Only.
 	#endif
 #endif
 

@@ -5,8 +5,6 @@
 
 #include "funconfig.h"
 
-#define FUNCONF_USE_PLL           0        // Use built-in 2x PLL
-#define FUNCONF_SYSTEM_CORE_CLOCK 6000000  // Computed Clock in Hz.
 /*****************************************************************************
 	CH32V003 Fun Configs:
 
@@ -24,6 +22,43 @@
 #define FUNCONF_UART_PRINTF_BAUD 115200 // Only used if FUNCONF_USE_UARTPRINTF is set.
 #define FUNCONF_DEBUGPRINTF_TIMEOUT 160000 // Arbitrary time units
 */
+
+// Calculate system clock settings
+#if   FUNCONF_SYSTEM_CORE_CLOCK == 48000000
+  #define FUNCONF_CLOCK_DIV                  RCC_HPRE_DIV1
+  #define FUNCONF_USE_PLL                    1
+#elif FUNCONF_SYSTEM_CORE_CLOCK == 24000000
+  #define FUNCONF_CLOCK_DIV                  RCC_HPRE_DIV1
+#elif FUNCONF_SYSTEM_CORE_CLOCK == 16000000
+  #define FUNCONF_CLOCK_DIV                  RCC_HPRE_DIV3
+  #define FUNCONF_USE_PLL                    1
+#elif FUNCONF_SYSTEM_CORE_CLOCK == 12000000
+  #define FUNCONF_CLOCK_DIV                  RCC_HPRE_DIV2
+#elif FUNCONF_SYSTEM_CORE_CLOCK ==  8000000
+  #define FUNCONF_CLOCK_DIV                  RCC_HPRE_DIV3
+#elif FUNCONF_SYSTEM_CORE_CLOCK ==  6000000
+  #define FUNCONF_CLOCK_DIV                  RCC_HPRE_DIV4
+#elif FUNCONF_SYSTEM_CORE_CLOCK ==  4000000
+  #define FUNCONF_CLOCK_DIV                  RCC_HPRE_DIV6
+#elif FUNCONF_SYSTEM_CORE_CLOCK ==  3000000
+  #define FUNCONF_CLOCK_DIV                  RCC_HPRE_DIV8
+#elif FUNCONF_SYSTEM_CORE_CLOCK ==  1500000
+  #define FUNCONF_CLOCK_DIV                  RCC_HPRE_DIV16
+#elif FUNCONF_SYSTEM_CORE_CLOCK ==   750000
+  #define FUNCONF_CLOCK_DIV                  RCC_HPRE_DIV32
+#elif FUNCONF_SYSTEM_CORE_CLOCK ==   375000
+  #define FUNCONF_CLOCK_DIV                  RCC_HPRE_DIV64
+#elif FUNCONF_SYSTEM_CORE_CLOCK ==   187500
+  #define FUNCONF_CLOCK_DIV                  RCC_HPRE_DIV128
+#elif FUNCONF_SYSTEM_CORE_CLOCK ==    93750
+  #define FUNCONF_CLOCK_DIV                  RCC_HPRE_DIV256
+#else
+  #warning Unsupported system clock frequency, using internal 48MHz
+  #define FUNCONF_CLOCK_DIV                  RCC_HPRE_DIV1
+  #define FUNCONF_USE_PLL                    1
+  #undef  FUNCONF_SYSTEM_CORE_CLOCK
+  #define FUNCONF_SYSTEM_CORE_CLOCK          48000000
+#endif
 
 #if !defined(FUNCONF_USE_DEBUGPRINTF) && !defined(FUNCONF_USE_UARTPRINTF)
 	#define FUNCONF_USE_DEBUGPRINTF 1
