@@ -24,19 +24,26 @@
 #define SYSTICK_CTLR_STRE  (1 << 3)
 #define SYSTICK_CTLR_SWIE  (1 << 31)
 
-#define LED_MATRIX_NUM_PINS 4
+#define LED_MATRIX_NUM_PINS 6
 #define LED_MATRIX_SIZE     LED_MATRIX_NUM_PINS *(LED_MATRIX_NUM_PINS - 1)
 #define LED_PWM_CYCLES      16
 
 uint8_t pins[LED_MATRIX_NUM_PINS] = {
-    GPIOv_from_PORT_PIN(GPIO_port_C, 1),
-    GPIOv_from_PORT_PIN(GPIO_port_C, 2),
-    GPIOv_from_PORT_PIN(GPIO_port_C, 4),
-    GPIOv_from_PORT_PIN(GPIO_port_A, 1),
+    GPIOv_from_PORT_PIN(GPIO_port_C, 1),  // IO1
+    GPIOv_from_PORT_PIN(GPIO_port_C, 2),  // IO2
+    GPIOv_from_PORT_PIN(GPIO_port_C, 4),  // IO3
+    GPIOv_from_PORT_PIN(GPIO_port_D, 5),  // IO4
+    GPIOv_from_PORT_PIN(GPIO_port_A, 1),  // IO5
+    GPIOv_from_PORT_PIN(GPIO_port_A, 2),  // IO6
 };
 
 // 5x6 pixel font
 static uint32_t font[] = {
+    0b00001000111011111111111111101010,  // heart
+    0b11111111111111111111111111111111,  // full square
+    0b00111111000110001100011000111111,  // square
+    0b00000000111001010010100111000000,  // smaller square
+    0b00000000000000100001000000000000,  // micro square
     0b00000000000000000000000000000000,  // 0x20 space
     0b00001000000000100001000010000100,  // 0x21 '!'
     0b00000000000000000000000101001010,  // 0x22 '"'
@@ -51,7 +58,7 @@ static uint32_t font[] = {
     0b00001000010011111001000010000000,  // 0x2B '+'
     0b00000010011000110000000000000000,  // 0x2C ','
     0b00000000000011111000000000000000,  // 0x2D '-'
-    0b00000000110001100000000000000000,  // 0x2E '.'
+    0b00000000011000110000000000000000,  // 0x2E '.'
     0b00000010001000100010001000000000,  // 0x2F '/'
     0b00011101000110101101011000101110,  // 0x30 '0'
     0b00011100010000100001000011000100,  // 0x31 '1'
@@ -136,16 +143,19 @@ static uint32_t font[] = {
 
 // Effects
 static uint8_t effects[][LED_MATRIX_SIZE] = {
-    {0, 4, 8, 16, 0, 4, 8, 16, 0, 4, 8, 16},   // Diagonal wave
-    {0, 3, 6, 9, 12, 15, 0, 0, 0, 0, 0, 0},    // Snake
-    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 16},     // Dot
-    {0, 0, 16, 0, 0, 16, 0, 0, 16, 0, 0, 16},  // Line
+    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 16},       // Dot
+    {15, 12, 9, 6, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},      // Snake
+    {0, 0, 0, 0, 16, 0, 0, 0, 0, 16, 0, 0, 0, 0, 16, 0, 0, 0, 0, 16, 0, 0, 0, 0, 16, 0, 0, 0, 0, 16},  // Line
+    {0, 4, 8, 12, 16, 0, 4, 8, 12, 16, 0, 4, 8, 12, 16,
+     0, 4, 8, 12, 16, 0, 4, 8, 12, 16, 0, 4, 8, 12, 16},  // Diagonal wave
 };
 
 // PWM duty cycles of LEDs
 uint8_t led_duty_cycles[LED_MATRIX_SIZE];
 
 static inline void led_matrix_run();
+
+#define BOARD 0
 
 // Start up the SysTick IRQ
 void systick_init(void)
@@ -183,6 +193,7 @@ static inline void led_matrix_init()
 {
     GPIO_port_enable(GPIO_port_A);
     GPIO_port_enable(GPIO_port_C);
+    GPIO_port_enable(GPIO_port_D);
 
     for (uint8_t i = 0; i < LED_MATRIX_NUM_PINS; i++)
     {
@@ -246,14 +257,24 @@ static inline void led_matrix_run()
 
 void led_putchar(uint8_t c)
 {
-    uint32_t ch  = font[c];
+    uint32_t ch  = font[c - 27];
     uint8_t *led = led_duty_cycles;
     for (uint8_t line = 0; line < LED_MATRIX_NUM_PINS; line++)
     {
         for (uint8_t pixel = 0; pixel < LED_MATRIX_NUM_PINS - 1; pixel++)
         {
-            *led++ = (ch & (1 << (line * 5 + pixel))) ? 32 : 0;
+            *led++ = (ch & 0x01) ? 16 : 0;
+            ch >>= 1;
         }
+    }
+}
+
+void led_show_array(const char *arr, uint8_t size)
+{
+    for (uint8_t i = 0; i < size; i++)
+    {
+        led_putchar(arr[i]);
+        Delay_Ms(300);
     }
 }
 
@@ -275,11 +296,16 @@ int main()
 
     while (1)
     {
+        const char *start = "\x1c\x1d\x1e\x1f";
+        led_show_array(start, strlen(start));
+        const char *count_down = "543210";
+        led_show_array(count_down, strlen(count_down));
+
         // Run snake
         for (uint8_t e = 0; e < sizeof(effects) / sizeof(effects[0]); e++)
         {
             set_effect(e);
-            for (uint8_t loop = 0; loop < 12; loop++)
+            for (uint8_t loop = 0; loop < LED_MATRIX_SIZE; loop++)
             {
                 // Shuffle the LED duty cycles
                 uint8_t t = led_duty_cycles[0];
@@ -289,15 +315,17 @@ int main()
                 }
                 led_duty_cycles[LED_MATRIX_SIZE - 1] = t;
 
-                Delay_Ms(100);
+                Delay_Ms(50);
             }
         }
 
-        // Show all characters
-        for (uint8_t c = 0; c < sizeof(font) / sizeof(font[0]); c++)
+        const char *msg[] = {"Hello", "World", "!!!!!", "LoveU", "Good ", "Night", "\x1b\x1b\x1b\x1b\x1b"};
+        for (uint8_t i = 0; i < 7; i++)
         {
-            led_putchar(c);
-            Delay_Ms(300);
+            led_putchar(msg[i][BOARD]);
+            Delay_Ms(800);
         }
+        const char *end = "\x1f\x1e\x1d\x1c";
+        led_show_array(end, strlen(end));
     }
 }
