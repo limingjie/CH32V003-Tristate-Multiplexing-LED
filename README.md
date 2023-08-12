@@ -2,6 +2,10 @@
 
 CH32V003J4M6 (SOP-8) drives 5x6 LED matrix.
 
+I programmed 5 boards to work together. But as there is no communication among the boards, the boards will soon not in sync...
+
+![5 Boards](images/5_Boards.webp)
+
 ## Schematic
 
 ![Schematic](images/CH32V003_Tristate_Multiplexing_LED_Schematic.png)
