@@ -3,7 +3,7 @@
 CH32V003J4M6 (SOP-8) drives a 5x6 LED matrix with only 6 GPIOs.
 
 - EasyEDA: [https://oshwlab.com/mingjie/ch32v003-tristate-multiplexing-led](https://oshwlab.com/mingjie/ch32v003-tristate-multiplexing-led)
-- Video: [Low-Cost Running LED Solution - 6 GPIOs drive a 5x6 LED Matrix](https://www.bilibili.com/video/BV1tz4y1g7z6/)
+- Video: [Low-Cost Running LED Solution - 6 GPIOs Drive a 5x6 LED Matrix](https://www.bilibili.com/video/BV1tz4y1g7z6/)
 
 I programmed 5 boards to show running words. But as there is no synchronization among the boards, the boards will soon run out of sync.
 
