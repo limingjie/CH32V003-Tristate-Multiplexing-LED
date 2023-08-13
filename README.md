@@ -18,7 +18,7 @@ I programmed 5 boards to show running words. But as there is no synchronization 
 
 The program uses the [Tristate Multiplexing (Charlieplexing)](https://en.wikipedia.org/wiki/Charlieplexing) technique to drive LEDs. Each GPIO is used as both row and column lines, so n GPIOs support `n x (n  - 1)` LEDs.
 
-There is only one LED light at a time, and each LED supports 16 brightness levels. The program uses `SysTick` to update the LED matrix 50,000 times per second, so each LED updates at 50,000/30/16 = 104Hz, which is fast enough for human eyes to notice.
+There is only one LED light at a time, and each LED supports 16 brightness levels. The program uses `SysTick` to update the LED matrix 50,000 times per second, so each LED updates at 50,000/30/16 = 104Hz, which is too fast for human eyes to notice.
 
 ## Programming
 
@@ -51,6 +51,13 @@ Clone the project, connect the board to the programmer, then run the `make` comm
 ```shell
 git clone https://github.com/limingjie/CH32V003-Tristate-Multiplexing-LED.git
 cd CH32V003-Tristate-Multiplexing-LED
+make
+```
+
+The `PD1/SWDIO`, `PD4`, and `PD5` share the same pin on CH32V003J4M6, after the program uploaded, it is not possible to upload again. Use the `minichlink -u` command to clear all code flash (unbrick) and then upload.
+
+```shell
+./tools/minichlink -u
 make
 ```
 
