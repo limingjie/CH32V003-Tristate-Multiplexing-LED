@@ -14,7 +14,7 @@ I programmed 5 boards to show running words. But as there is no synchronization 
 
 ![Schematic](images/CH32V003_Tristate_Multiplexing_LED_Schematic.png)
 
-## How it works
+## How It Works
 
 The program uses the [Tristate Multiplexing (Charlieplexing)](https://en.wikipedia.org/wiki/Charlieplexing) technique to drive LEDs. Each GPIO is used as both row and column lines, so n GPIOs support `n x (n  - 1)` LEDs.
 
@@ -27,9 +27,15 @@ To program the CH32V003 microcontroller, you will need a programmer that support
 - The official [WCH-LinkE](https://www.wch-ic.com/products/WCH-Link.html) programmer.
 - Check [CNLohr's ch32v003fun](https://github.com/cnlohr/ch32v003fun) project for other options, such as ESP32S2 and Arduino-based programmers.
 
-### Wiring the board to WCH-LinkE
+### Wiring the Board to WCH-LinkE
 
 ![CH32V003 Upload Firmware Wiring](images/CH32V003_Upload_Firmware_Wiring.webp)
+
+### Switch WCH-LinkE to RISC-V Mode
+
+If the blue LED on the WCH-LinkE is always on, it is in ARM mode. To program CH32V003, it needs to be switched to RISC-V mode. Hold the Modes key while plugging it in the USB port.
+
+![WCH-LinkE Modes](images/WCH-LinkE-Modes.jpg)
 
 ## Compiling and Uploading (macOS)
 
