@@ -301,7 +301,7 @@ int main()
         const char *count_down = "543210";
         led_show_array(count_down, strlen(count_down));
 
-        // Run snake
+        // Run effects
         for (uint8_t e = 0; e < sizeof(effects) / sizeof(effects[0]); e++)
         {
             set_effect(e);
